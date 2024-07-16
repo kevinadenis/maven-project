@@ -1,0 +1,59 @@
+pipeline {
+    agent {
+        label {
+            label 'Master'
+        }
+    }
+
+    stages {
+        stage('Prepare') {
+            steps {
+                echo 'Preparing'
+                git 'https://github.com/kevinadenis/maven-project.git'
+            }
+        }
+        
+        stage('Compile') {
+            steps {
+                echo 'Compiling'
+                withMaven(maven: 'Default') {
+                    sh "mvn compile"
+                }
+            }
+        }
+        
+        stage('Testing') {
+            steps {
+                echo 'Testing'
+                withMaven(maven: 'Default') {
+                    sh "mvn test"
+                }
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                echo 'Building'
+                withMaven(maven: 'Default') {
+                    sh "mvn -B -DskipTests clean package"
+                }
+            }
+        }
+        
+        stage('Scanner Analysis') {
+            steps {
+                echo 'Analysing'
+                withSonarCube(installationName: 'sonar_server', credentialsId: 'Sonar') {
+                    sh "mvn -B -DskipTests clean package sonar:sonar"
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                echo 'Deploying'
+                sh "mvn deploy"
+            }
+        }
+    }
+}
