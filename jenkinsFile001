@@ -43,7 +43,7 @@ pipeline {
         stage('Scanner Analysis') {
             steps {
                 echo 'Analysing'
-                withSonarCube(installationName: 'sonar_server', credentialsId: 'Sonar') {
+                withSonarQubeEnv(installationName: 'sonar_server', credentialsId: 'Sonar') {
                     sh "mvn -B -DskipTests clean package sonar:sonar"
                 }
             }
